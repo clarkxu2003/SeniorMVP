@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import { normalizeText } from "../utils/helpers";
+import { COLORS, RADII, SHADOW } from "../utils/theme";
 
 export default function RemindersScreen({ todos, setTodos }) {
   const [newItem, setNewItem] = useState("");
-
-  const remaining = useMemo(
-    () => todos.filter((t) => !t.done).length,
-    [todos]
-  );
+  const remaining = useMemo(() => todos.filter((t) => !t.done).length, [todos]);
 
   const addManual = () => {
     const t = normalizeText(newItem);
@@ -18,164 +18,159 @@ export default function RemindersScreen({ todos, setTodos }) {
   };
 
   const toggle = (id) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
-    );
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
   };
 
-  const remove = (id) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
-  };
+  const remove = (id) => setTodos((prev) => prev.filter((t) => t.id !== id));
 
   return (
-    <View style={styles.screen}>
-      <Text style={styles.h2}>Reminders</Text>
-      <Text style={styles.subtitleSmall}>{remaining} left • Tap to check off</Text>
-
-      <View style={styles.addRow}>
-        <TextInput
-          value={newItem}
-          onChangeText={setNewItem}
-          placeholder="Add a reminder…"
-          placeholderTextColor="#8A93A6"
-          style={styles.addInput}
-          returnKeyType="done"
-          onSubmitEditing={addManual}
-        />
-        <TouchableOpacity style={styles.addBtn} onPress={addManual}>
-          <Text style={styles.addBtnText}>Add</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={todos}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: 10, paddingBottom: 30 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => toggle(item.id)} style={styles.todoRow}>
-            <View style={[styles.check, item.done ? styles.checkDone : styles.checkOpen]}>
-              <Text style={{ color: "#0B0F1A", fontWeight: "900" }}>
-                {item.done ? "✓" : ""}
-              </Text>
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  styles.todoText,
-                  item.done && {
-                    textDecorationLine: "line-through",
-                    color: "#8A93A6",
-                  },
-                ]}
-              >
-                {item.text}
-              </Text>
-            </View>
-
-            <TouchableOpacity onPress={() => remove(item.id)} style={styles.delBtn}>
-              <Text style={styles.delBtnText}>Del</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          <View style={{ paddingTop: 40, alignItems: "center" }}>
-            <Text style={{ color: "#8A93A6" }}>No reminders yet.</Text>
+    <LinearGradient colors={[COLORS.bgTop, COLORS.bgBottom]} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: 44, paddingHorizontal: 18 }}>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Checklist</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{remaining} left</Text>
           </View>
-        }
-      />
-    </View>
+        </View>
+        <Text style={styles.subTitle}>Tap the circle to mark complete.</Text>
+
+        {/* Add new */}
+        <View style={styles.addRow}>
+          <TextInput
+            value={newItem}
+            onChangeText={setNewItem}
+            placeholder="Add New Task…"
+            placeholderTextColor={COLORS.muted}
+            style={styles.addInput}
+            returnKeyType="done"
+            onSubmitEditing={addManual}
+          />
+          <TouchableOpacity style={styles.addBtn} onPress={addManual}>
+            <MaterialCommunityIcons name="plus" size={18} color={COLORS.bgBottom} />
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={todos}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingTop: 14, paddingBottom: 26 }}
+          renderItem={({ item }) => (
+            <View style={[styles.taskRow, SHADOW.glow]}>
+              <TouchableOpacity onPress={() => toggle(item.id)} style={styles.checkCircle}>
+                {item.done ? (
+                  <MaterialCommunityIcons name="check" size={18} color={COLORS.bgBottom} />
+                ) : null}
+              </TouchableOpacity>
+
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.taskText,
+                    item.done && { color: COLORS.muted, textDecorationLine: "line-through" },
+                  ]}
+                >
+                  {item.text}
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={() => remove(item.id)} style={styles.rightIcon}>
+                <MaterialCommunityIcons name="chevron-right" size={24} color={COLORS.gold} />
+              </TouchableOpacity>
+            </View>
+          )}
+          ListEmptyComponent={
+            <View style={{ paddingTop: 40, alignItems: "center" }}>
+              <Text style={{ color: COLORS.muted, fontWeight: "700" }}>No tasks yet.</Text>
+            </View>
+          }
+        />
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = {
-  screen: {
-    flex: 1,
-    backgroundColor: "#0B0F1A",
-    paddingHorizontal: 18,
-    paddingTop: 12,
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  h2: {
-    color: "#EAF0FF",
+  title: {
+    color: COLORS.gold2,
     fontSize: 26,
-    fontWeight: "800",
+    fontWeight: "900",
   },
-  subtitleSmall: {
-    color: "#B8C0D6",
-    fontSize: 14,
+  subTitle: {
+    color: COLORS.subText,
     marginTop: 6,
-    marginBottom: 10,
+    fontWeight: "650",
+  },
+  badge: {
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(14,26,51,0.55)",
+  },
+  badgeText: {
+    color: COLORS.gold2,
+    fontWeight: "900",
+    fontSize: 12,
   },
   addRow: {
+    marginTop: 14,
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
   },
   addInput: {
     flex: 1,
-    backgroundColor: "#141B2E",
+    borderRadius: RADII.lg,
     borderWidth: 1,
-    borderColor: "#2A3350",
-    borderRadius: 14,
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(14,26,51,0.55)",
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: "#EAF0FF",
-    fontSize: 14,
-    fontWeight: "600",
+    paddingVertical: 12,
+    color: COLORS.text,
+    fontWeight: "650",
   },
   addBtn: {
-    backgroundColor: "#5B8CFF",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-  },
-  addBtnText: {
-    color: "#0B0F1A",
-    fontWeight: "900",
-  },
-  todoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    width: 44,
+    height: 44,
     borderRadius: 16,
-    backgroundColor: "#141B2E",
-    borderWidth: 1,
-    borderColor: "#2A3350",
-    marginBottom: 10,
-  },
-  check: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    backgroundColor: COLORS.gold2,
     alignItems: "center",
     justifyContent: "center",
   },
-  checkOpen: {
-    backgroundColor: "#BFE4FF",
-    opacity: 0.65,
-  },
-  checkDone: {
-    backgroundColor: "#BFE4FF",
-    opacity: 1,
-  },
-  todoText: {
-    color: "#EAF0FF",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  delBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: "#0B0F1A",
+  taskRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: RADII.xl,
     borderWidth: 1,
-    borderColor: "#2A3350",
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(14,26,51,0.6)",
+    marginBottom: 12,
   },
-  delBtnText: {
-    color: "#B8C0D6",
-    fontSize: 12,
+  checkCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: COLORS.gold2,
+    backgroundColor: COLORS.gold2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  taskText: {
+    color: COLORS.text,
+    fontSize: 15,
     fontWeight: "800",
+  },
+  rightIcon: {
+    paddingLeft: 6,
   },
 };

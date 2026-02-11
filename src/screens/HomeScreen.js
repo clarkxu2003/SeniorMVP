@@ -1,99 +1,179 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { COLORS, RADII, SHADOW } from "../utils/theme";
 
 export default function HomeScreen({ navigation }) {
   return (
-    <View style={styles.screen}>
-      <View style={{ marginTop: 28 }}>
-        <Text style={styles.h1}>SeniorMVP</Text>
-        <Text style={styles.subtitle}>Talk it out. We’ll keep it simple.</Text>
-      </View>
+    <LinearGradient colors={[COLORS.bgTop, COLORS.bgBottom]} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 44 }}>
+        {/* Top brand */}
+        <View style={{ alignItems: "center", marginBottom: 18 }}>
+          <Text style={styles.brand}>UBICA</Text>
+          <Text style={styles.brandSub}>Ubiquitous Care</Text>
+        </View>
 
-      <View style={{ flex: 1, justifyContent: "center", width: "100%" }}>
-        <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={() => navigation.navigate("Chat")}
-        >
-          <Text style={styles.primaryBtnText}>AI Chat</Text>
-          <Text style={styles.primaryBtnHint}>Voice-friendly, low effort</Text>
+        <Text style={styles.greeting}>Good morning, David.</Text>
+        <Text style={styles.greetingSub}>How can I help you today?</Text>
+
+        {/* Main mic card */}
+        <View style={[styles.heroCard, SHADOW.glow]}>
+          <View style={styles.heroIconWrap}>
+            <MaterialCommunityIcons name="microphone" size={34} color={COLORS.gold} />
+          </View>
+          <Text style={styles.heroText}>Just speak naturally</Text>
+          <Text style={styles.heroSub}>
+            to get help with your tasks.
+          </Text>
+        </View>
+
+        {/* Actions */}
+        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Chat")}>
+          <View style={styles.actionLeft}>
+            <View style={styles.actionIcon}>
+              <MaterialCommunityIcons name="chat-processing-outline" size={22} color={COLORS.gold} />
+            </View>
+            <View>
+              <Text style={styles.actionTitle}>Speak to UBICA</Text>
+              <Text style={styles.actionSub}>Ask by voice or text</Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.secondaryBtn}
-          onPress={() => navigation.navigate("Reminders")}
-        >
-          <Text style={styles.secondaryBtnText}>Reminders</Text>
-          <Text style={styles.secondaryBtnHint}>Checklist + quick edits</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Checklist")}>
+          <View style={styles.actionLeft}>
+            <View style={styles.actionIcon}>
+              <MaterialCommunityIcons name="calendar-plus" size={22} color={COLORS.gold} />
+            </View>
+            <View>
+              <Text style={styles.actionTitle}>Add Reminder</Text>
+              <Text style={styles.actionSub}>Appointments, meds, and more</Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
         </TouchableOpacity>
-      </View>
 
-      <View style={{ paddingBottom: 18 }}>
-        <Text style={styles.footerNote}>MVP v1 • local-only • simple flow</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Checklist")}>
+          <View style={styles.actionLeft}>
+            <View style={styles.actionIcon}>
+              <MaterialCommunityIcons name="format-list-checks" size={22} color={COLORS.gold} />
+            </View>
+            <View>
+              <Text style={styles.actionTitle}>View Checklist</Text>
+              <Text style={styles.actionSub}>Your tasks at a glance</Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
+        </TouchableOpacity>
+
+        <Text style={styles.tip}>
+          Tip: You can use the keyboard mic to talk on mobile.
+        </Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = {
-  screen: {
-    flex: 1,
-    backgroundColor: "#0B0F1A",
-    paddingHorizontal: 18,
+  brand: {
+    color: COLORS.gold2,
+    fontSize: 28,
+    fontWeight: "900",
+    letterSpacing: 3,
   },
-  h1: {
-    color: "#EAF0FF",
-    fontSize: 34,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-    textAlign: "center",
+  brandSub: {
+    color: COLORS.subText,
+    marginTop: 4,
+    fontWeight: "700",
   },
-  subtitle: {
-    color: "#B8C0D6",
-    fontSize: 15,
-    textAlign: "center",
+  greeting: {
+    color: COLORS.gold2,
+    fontSize: 26,
+    fontWeight: "900",
     marginTop: 8,
   },
-  footerNote: {
-    color: "#6E7891",
-    textAlign: "center",
-    fontSize: 12,
-  },
-  primaryBtn: {
-    backgroundColor: "#5B8CFF",
-    borderRadius: 18,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
+  greetingSub: {
+    color: COLORS.subText,
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 6,
     marginBottom: 14,
   },
-  primaryBtnText: {
-    color: "#0B0F1A",
-    fontSize: 18,
-    fontWeight: "900",
-  },
-  primaryBtnHint: {
-    color: "#0B0F1A",
-    opacity: 0.8,
-    marginTop: 6,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  secondaryBtn: {
-    backgroundColor: "#141B2E",
-    borderRadius: 18,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
+  heroCard: {
+    borderRadius: RADII.xl,
     borderWidth: 1,
-    borderColor: "#2A3350",
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(14,26,51,0.85)",
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+    alignItems: "center",
+    marginBottom: 16,
   },
-  secondaryBtnText: {
-    color: "#EAF0FF",
+  heroIconWrap: {
+    width: 78,
+    height: 78,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    backgroundColor: "rgba(7,11,20,0.55)",
+  },
+  heroText: {
+    color: COLORS.gold2,
     fontSize: 18,
     fontWeight: "900",
   },
-  secondaryBtnHint: {
-    color: "#B8C0D6",
+  heroSub: {
+    color: COLORS.subText,
     marginTop: 6,
-    fontSize: 13,
     fontWeight: "600",
+  },
+  actionCard: {
+    borderRadius: RADII.lg,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(14,26,51,0.65)",
+    padding: 14,
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  actionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  actionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(7,11,20,0.35)",
+  },
+  actionTitle: {
+    color: COLORS.gold2,
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  actionSub: {
+    color: COLORS.subText,
+    marginTop: 3,
+    fontWeight: "600",
+    fontSize: 12,
+  },
+  tip: {
+    color: COLORS.muted,
+    marginTop: 10,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
   },
 };
