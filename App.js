@@ -1,20 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import HomeScreen from "./src/screens/HomeScreen";
+import ChatScreen from "./src/screens/ChatScreen";
+import RemindersScreen from "./src/screens/RemindersScreen";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [todos, setTodos] = useState([{ id: "t1", text: "Drink water", done: false }]);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerTitleAlign: "center" }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Chat">
+          {(props) => <ChatScreen {...props} todos={todos} setTodos={setTodos} />}
+        </Stack.Screen>
+        <Stack.Screen name="Reminders">
+          {(props) => (
+            <RemindersScreen {...props} todos={todos} setTodos={setTodos} />
+          )}
+        </Stack.Screen>
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
