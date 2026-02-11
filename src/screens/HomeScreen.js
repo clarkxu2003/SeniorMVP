@@ -17,55 +17,94 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.greeting}>Good morning, Clark.</Text>
         <Text style={styles.greetingSub}>How can I help you today?</Text>
 
-        {/* Main mic card */}
-        <View style={[styles.heroCard, SHADOW.glow]}>
+        {/* Main mic card (NOW CLICKABLE -> go to Chat) */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate("Chat")}
+          style={[styles.heroCard, SHADOW.glow]}
+        >
           <View style={styles.heroIconWrap}>
-            <MaterialCommunityIcons name="microphone" size={34} color={COLORS.gold} />
+            <MaterialCommunityIcons
+              name="microphone"
+              size={34}
+              color={COLORS.gold}
+            />
           </View>
           <Text style={styles.heroText}>Just speak naturally</Text>
-          <Text style={styles.heroSub}>
-            to get help with your tasks.
-          </Text>
-        </View>
+          <Text style={styles.heroSub}>to get help with your tasks.</Text>
+        </TouchableOpacity>
 
         {/* Actions */}
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Chat")}>
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate("Chat")}
+        >
           <View style={styles.actionLeft}>
             <View style={styles.actionIcon}>
-              <MaterialCommunityIcons name="chat-processing-outline" size={22} color={COLORS.gold} />
+              <MaterialCommunityIcons
+                name="chat-processing-outline"
+                size={22}
+                color={COLORS.gold}
+              />
             </View>
             <View>
               <Text style={styles.actionTitle}>Speak to UBICA</Text>
               <Text style={styles.actionSub}>Ask by voice or text</Text>
             </View>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={28}
+            color={COLORS.gold}
+          />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Checklist")}>
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate("Checklist")}
+        >
           <View style={styles.actionLeft}>
             <View style={styles.actionIcon}>
-              <MaterialCommunityIcons name="calendar-plus" size={22} color={COLORS.gold} />
+              <MaterialCommunityIcons
+                name="calendar-plus"
+                size={22}
+                color={COLORS.gold}
+              />
             </View>
             <View>
               <Text style={styles.actionTitle}>Add Reminder</Text>
               <Text style={styles.actionSub}>Appointments, meds, and more</Text>
             </View>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={28}
+            color={COLORS.gold}
+          />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate("Checklist")}>
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate("Checklist")}
+        >
           <View style={styles.actionLeft}>
             <View style={styles.actionIcon}>
-              <MaterialCommunityIcons name="format-list-checks" size={22} color={COLORS.gold} />
+              <MaterialCommunityIcons
+                name="format-list-checks"
+                size={22}
+                color={COLORS.gold}
+              />
             </View>
             <View>
               <Text style={styles.actionTitle}>View Checklist</Text>
               <Text style={styles.actionSub}>Your tasks at a glance</Text>
             </View>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={28} color={COLORS.gold} />
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={28}
+            color={COLORS.gold}
+          />
         </TouchableOpacity>
 
         <Text style={styles.tip}>

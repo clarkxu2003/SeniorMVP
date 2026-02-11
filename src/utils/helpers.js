@@ -1,5 +1,6 @@
 import * as Speech from "expo-speech";
-import { Alert, Platform } from "react-native";
+
+let speakTimer = null;
 
 export function normalizeText(s) {
   return (s || "").trim();
@@ -20,7 +21,11 @@ export function looksLikeTodo(text) {
     "don't forget",
     "dont forget",
   ];
-  return todoKeywords.some((k) => t.includes(k)) || t.startsWith("remind") || t.startsWith("add ");
+  return (
+    todoKeywords.some((k) => t.includes(k)) ||
+    t.startsWith("remind") ||
+    t.startsWith("add ")
+  );
 }
 
 export function extractTodoText(raw) {
@@ -33,32 +38,38 @@ export function extractTodoText(raw) {
   return t.trim() || normalizeText(raw);
 }
 
-export function speakSafe(text) {
+/**
+ * Optional: warm up TTS once (helps iOS not swallow first syllables)
+ * You can call this once on app start if you want.
+ */
+export function warmUpTTS() {
   try {
     Speech.stop();
-    Speech.speak(text, { rate: 0.92, pitch: 1.0, language: "en-US" });
+    Speech.speak(" ", { rate: 1.0, volume: 0.0 });
+  } catch (e) {}
+}
+
+export function speakSafe(text) {
+  try {
+    if (speakTimer) clearTimeout(speakTimer);
+
+    // Stop any current speech first
+    Speech.stop();
+
+    // Key fix: small delay so iOS audio route wakes up (prevents first letters being cut)
+    speakTimer = setTimeout(() => {
+      Speech.speak(text, {
+        rate: 0.92,
+        pitch: 1.0,
+        language: "en-US",
+      });
+    }, 160);
   } catch (e) {}
 }
 
 export function stopSpeaking() {
   try {
+    if (speakTimer) clearTimeout(speakTimer);
     Speech.stop();
   } catch (e) {}
-}
-
-/**
- * Expo Go 里一般无法做“真语音识别”。先给一个友好提示。
- * 你后面做 Dev Build 时，我会把这里替换为真正 STT start/stop。
- */
-export function showVoiceInputInfo() {
-  Alert.alert(
-    "Voice input",
-    Platform.select({
-      ios: "Expo Go usually can’t do speech-to-text. For now, tap the keyboard mic for dictation.\n\nIf you want real voice input, we’ll create an Expo Dev Build (EAS).",
-      android:
-        "Expo Go usually can’t do speech-to-text. For now, use the keyboard mic for dictation.\n\nIf you want real voice input, we’ll create an Expo Dev Build (EAS).",
-      default:
-        "Voice input needs a Dev Build. For now, use keyboard dictation.",
-    })
-  );
 }
