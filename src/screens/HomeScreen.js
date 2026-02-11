@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.brandSub}>Ubiquitous Care</Text>
         </View>
 
-        <Text style={styles.greeting}>Good morning, David.</Text>
+        <Text style={styles.greeting}>Good morning, Clark.</Text>
         <Text style={styles.greetingSub}>How can I help you today?</Text>
 
         {/* Main mic card */}
