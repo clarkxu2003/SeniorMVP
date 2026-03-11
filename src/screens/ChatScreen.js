@@ -7,70 +7,149 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import {
-  extractTodoText,
-  looksLikeTodo,
   normalizeText,
   speakSafe,
-  stopSpeaking,
-  showVoiceInputInfo,
+  detectIntent,
+  startGuidedFlow,
+  continueGuidedFlow,
+  initialGuidedState,
 } from "../utils/helpers";
 import { COLORS, RADII, SHADOW } from "../utils/theme";
 
-export default function ChatScreen({ navigation, todos, setTodos }) {
+export default function ChatScreen({ navigation, todos = [], setTodos = () => {} }) {
+  const welcomeText =
+    "Hello, dear. I’m here to help. You can ask me to make a reminder, review your tasks, write a note, or guide you step by step.";
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     {
       id: "m0",
       role: "ai",
-      text: "Hello, dear. What would you like to do?",
+      text: welcomeText,
     },
   ]);
+  const [guidedState, setGuidedState] = useState(initialGuidedState);
 
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    speakSafe("Hello, dear. What would you like to do?");
+    speakSafe(welcomeText);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    setTimeout(() => listRef.current?.scrollToEnd?.({ animated: true }), 50);
+    setTimeout(() => {
+      listRef.current?.scrollToEnd?.({ animated: true });
+    }, 60);
   }, [messages.length]);
+
+  const pushMessage = (role, text) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `${role}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        role,
+        text,
+      },
+    ]);
+  };
+
+const handleAction = (action) => {
+  if (!action) return;
+
+  if (action.type === "add_todo") {
+    const newTodo = {
+      id: `t_${Date.now()}`,
+      text: action.payload.text,
+      done: false,
+    };
+
+    setTodos((prev) => [newTodo, ...prev]);
+
+    setTimeout(() => {
+      navigation.navigate("Checklist");
+    }, 500);
+  }
+
+  if (action.type === "open_checklist") {
+    navigation.navigate("Checklist");
+  }
+
+  if (action.type === "open_food_order") {
+    navigation.navigate("FoodOrder");
+  }
+};
 
   const onSend = () => {
     const text = normalizeText(input);
     if (!text) return;
 
-    setMessages((prev) => [...prev, { id: `u_${Date.now()}`, role: "user", text }]);
+    pushMessage("user", text);
     setInput("");
 
-    if (looksLikeTodo(text)) {
-      const todoText = extractTodoText(text);
-      setTodos((prev) => [{ id: `t_${Date.now()}`, text: todoText, done: false }, ...prev]);
+    let result;
 
-      const reply = `No problem. I will remind you: “${todoText}”. Anything else?`;
-      setMessages((prev) => [...prev, { id: `a_${Date.now()}`, role: "ai", text: reply }]);
-      speakSafe(reply);
-
-      setTimeout(() => navigation.navigate("Checklist"), 650);
-      return;
+    if (guidedState?.mode && guidedState?.step) {
+      result = continueGuidedFlow(guidedState, text, todos);
+    } else {
+      const intent = detectIntent(text);
+      result = startGuidedFlow(intent, text, todos);
     }
 
-    const reply = "If it’s a task, you can say “Remind me to …” and I’ll add it to your checklist.";
-    setMessages((prev) => [...prev, { id: `a_${Date.now()}`, role: "ai", text: reply }]);
-    speakSafe(reply);
+    setTimeout(() => {
+      pushMessage("ai", result.reply);
+      speakSafe(result.reply);
+      setGuidedState(result.nextState || initialGuidedState);
+      handleAction(result.action);
+    }, 220);
   };
 
   const onMicPress = () => {
-    // Expo Go fallback: show info + focus input (use system keyboard mic dictation)
-    showVoiceInputInfo();
-    setTimeout(() => inputRef.current?.focus?.(), 250);
+    Alert.alert(
+      "Voice Input",
+      "For this prototype, please use your phone keyboard microphone for speech-to-text input."
+    );
+
+    setTimeout(() => {
+      inputRef.current?.focus?.();
+    }, 250);
+  };
+
+  const renderMessage = ({ item }) => {
+    const isUser = item.role === "user";
+
+    return (
+      <View
+        style={{
+          marginBottom: 10,
+          alignItems: isUser ? "flex-end" : "flex-start",
+        }}
+      >
+        <View
+          style={[
+            styles.bubble,
+            isUser ? styles.userBubble : styles.aiBubble,
+            SHADOW.glow,
+          ]}
+        >
+          <Text
+            style={[
+              styles.bubbleText,
+              { color: isUser ? COLORS.bgBottom : COLORS.text },
+            ]}
+          >
+            {item.text}
+          </Text>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -80,12 +159,25 @@ export default function ChatScreen({ navigation, todos, setTodos }) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        {/* Top bar */}
         <View style={styles.topBar}>
           <Text style={styles.brand}>UBICA</Text>
-          <TouchableOpacity onPress={stopSpeaking} style={styles.iconBtn}>
-            <MaterialCommunityIcons name="volume-off" size={18} color={COLORS.gold2} />
-            <Text style={styles.iconBtnText}>Mute</Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              setGuidedState(initialGuidedState);
+              const text =
+                "Okay. I cleared the current conversation guidance. What would you like help with now?";
+              pushMessage("ai", text);
+              speakSafe(text);
+            }}
+            style={styles.iconBtn}
+          >
+            <MaterialCommunityIcons
+              name="refresh"
+              size={18}
+              color={COLORS.gold2}
+            />
+            <Text style={styles.iconBtnText}>Reset</Text>
           </TouchableOpacity>
         </View>
 
@@ -93,29 +185,59 @@ export default function ChatScreen({ navigation, todos, setTodos }) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.id}
+          renderItem={renderMessage}
           contentContainerStyle={{ padding: 14, paddingBottom: 10 }}
-          renderItem={({ item }) => {
-            const isUser = item.role === "user";
-            return (
-              <View style={{ marginBottom: 10, alignItems: isUser ? "flex-end" : "flex-start" }}>
-                <View style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble, SHADOW.glow]}>
-                  <Text style={[styles.bubbleText, { color: isUser ? COLORS.bgBottom : COLORS.text }]}>
-                    {item.text}
-                  </Text>
-                </View>
-              </View>
-            );
-          }}
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd?.({ animated: true })
+          }
+          onLayout={() => listRef.current?.scrollToEnd?.({ animated: true })}
         />
 
-        {/* Input */}
+        <View style={styles.quickActionsWrap}>
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => setInput("I need a reminder")}
+          >
+            <Text style={styles.quickBtnText}>Reminder</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => setInput("What are my tasks")}
+          >
+            <Text style={styles.quickBtnText}>My Tasks</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => setInput("Write this down")}
+          >
+            <Text style={styles.quickBtnText}>Note</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => setInput("Talk to me")}
+          >
+            <Text style={styles.quickBtnText}>Chat</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => setInput("I want to order food")}
+          >
+          <Text style={styles.quickBtnText}>Food</Text>
+          </TouchableOpacity>
+          
+        </View>
+
         <View style={styles.inputWrap}>
           <View style={styles.inputCard}>
             <TextInput
               ref={inputRef}
               value={input}
               onChangeText={setInput}
-              placeholder="Tap to type…"
+              placeholder="Type or use keyboard voice input..."
               placeholderTextColor={COLORS.muted}
               style={styles.input}
               returnKeyType="send"
@@ -123,16 +245,24 @@ export default function ChatScreen({ navigation, todos, setTodos }) {
             />
 
             <TouchableOpacity onPress={onMicPress} style={styles.micBtn}>
-              <MaterialCommunityIcons name="microphone" size={20} color={COLORS.bgBottom} />
+              <MaterialCommunityIcons
+                name="microphone"
+                size={20}
+                color={COLORS.bgBottom}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={onSend} style={styles.sendBtn}>
-              <MaterialCommunityIcons name="send" size={18} color={COLORS.bgBottom} />
+              <MaterialCommunityIcons
+                name="send"
+                size={18}
+                color={COLORS.bgBottom}
+              />
             </TouchableOpacity>
           </View>
 
           <Text style={styles.hint}>
-            Tip: Use keyboard mic for dictation in Expo Go.
+            Tip: Try saying “I need a reminder” or “What are my tasks?”
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -183,12 +313,32 @@ const styles = {
     backgroundColor: COLORS.gold2,
   },
   aiBubble: {
-    backgroundColor: "rgba(14,26,51,0.75)",
+    backgroundColor: "rgba(14,26,51,0.78)",
   },
   bubbleText: {
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 21,
     fontWeight: "650",
+  },
+  quickActionsWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+  quickBtn: {
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(14,26,51,0.45)",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+  },
+  quickBtnText: {
+    color: COLORS.gold2,
+    fontSize: 12,
+    fontWeight: "700",
   },
   inputWrap: {
     paddingHorizontal: 14,

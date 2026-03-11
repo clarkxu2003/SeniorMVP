@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -7,109 +7,138 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import HomeScreen from "./src/screens/HomeScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import RemindersScreen from "./src/screens/RemindersScreen";
+import FoodOrderScreen from "./src/screens/FoodOrderScreen";
 import { COLORS } from "./src/utils/theme";
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [todos, setTodos] = useState([
-    { id: "t1", text: "Drink water", done: false },
+    {
+      id: "1",
+      text: "Take medicine at 8 PM",
+      completed: false,
+    },
+    {
+      id: "2",
+      text: "Call daughter tomorrow morning",
+      completed: false,
+    },
   ]);
 
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        initialRouteName="Home"
+        screenOptions={({ route, navigation }) => ({
           headerShown: false,
-
+          tabBarShowLabel: true,
           tabBarStyle: {
-            backgroundColor: "#080D18",
-            borderTopColor: "#1C2742",
-            borderTopWidth: 1,
-            height: 68,
-            paddingBottom: 10,
+            backgroundColor: COLORS.bgBottom,
+            borderTopColor: "rgba(212,175,55,0.18)",
+            height: 88,
             paddingTop: 8,
+            paddingBottom: 12,
           },
+          tabBarActiveTintColor: COLORS.gold2,
+          tabBarInactiveTintColor: COLORS.muted,
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: "700",
+            marginTop: 2,
+          },
+          tabBarIcon: ({ color, size }) => {
+            if (route.name === "Home") {
+              return (
+                <MaterialCommunityIcons
+                  name="home"
+                  size={size || 24}
+                  color={color}
+                />
+              );
+            }
 
-          tabBarActiveTintColor: COLORS.gold,
-          tabBarInactiveTintColor: "#7480A0",
-          tabBarLabelStyle: { fontWeight: "700" },
-        }}
+            if (route.name === "Chat") {
+              return (
+                <MaterialCommunityIcons
+                  name="microphone"
+                  size={size || 24}
+                  color={color}
+                />
+              );
+            }
+
+            if (route.name === "Checklist") {
+              return (
+                <MaterialCommunityIcons
+                  name="clipboard-text-outline"
+                  size={size || 24}
+                  color={color}
+                />
+              );
+            }
+
+            if (route.name === "FoodOrder") {
+              return (
+                <MaterialCommunityIcons
+                  name="silverware-fork-knife"
+                  size={size || 24}
+                  color={color}
+                />
+              );
+            }
+
+            return (
+              <MaterialCommunityIcons
+                name="circle"
+                size={size || 24}
+                color={color}
+              />
+            );
+          },
+          tabBarButton: (props) => (
+            <TouchableOpacity {...props} activeOpacity={0.85} />
+          ),
+        })}
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
           options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons
-                name="home-variant"
-                color={color}
-                size={size}
-              />
-            ),
+            tabBarLabel: "Home",
           }}
-        />
+        >
+          {(props) => <HomeScreen {...props} />}
+        </Tab.Screen>
 
-        {/* Center Mic (fixed centered + floating) */}
         <Tab.Screen
           name="Chat"
           options={{
-            tabBarLabel: "",
-            tabBarIcon: () => (
-              <View
-                style={{
-                  width: 72,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginTop: -20, // 调整这个值即可上下微调
-                }}
-              >
-                <View
-                  style={{
-                    width: 58,
-                    height: 58,
-                    borderRadius: 29,
-                    backgroundColor: COLORS.gold,
-                    alignItems: "center",
-                    justifyContent: "center",
-
-                    // 轻微阴影/发光效果（iOS/Android 都尽量兼容）
-                    shadowColor: COLORS.gold,
-                    shadowOpacity: 0.25,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 6 },
-                    elevation: 6,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="microphone"
-                    size={26}
-                    color={COLORS.bgBottom}
-                  />
-                </View>
-              </View>
-            ),
+            tabBarLabel: "Chat",
           }}
         >
-          {(props) => <ChatScreen {...props} todos={todos} setTodos={setTodos} />}
+          {(props) => (
+            <ChatScreen {...props} todos={todos} setTodos={setTodos} />
+          )}
         </Tab.Screen>
 
         <Tab.Screen
           name="Checklist"
           options={{
-            title: "Tasks",
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons
-                name="format-list-checks"
-                color={color}
-                size={size}
-              />
-            ),
+            tabBarLabel: "Tasks",
           }}
         >
           {(props) => (
             <RemindersScreen {...props} todos={todos} setTodos={setTodos} />
           )}
+        </Tab.Screen>
+
+        <Tab.Screen
+          name="FoodOrder"
+          options={{
+            tabBarLabel: "Food",
+          }}
+        >
+          {(props) => <FoodOrderScreen {...props} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
